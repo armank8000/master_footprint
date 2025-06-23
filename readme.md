@@ -46,7 +46,7 @@ cd footprinting-tool
 ### 2. Run the Script
 
 ```bash
-python3 footprint_advanced.py example.com
+python3 footprint_domain.py example.com
 ```
 
 ### 3. Save Output to Custom HTML File
