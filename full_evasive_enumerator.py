@@ -60,7 +60,7 @@ def analyze_results(results):
             analysis.append(suggest("ldapsearch",
                                     "Anonymous LDAP bind allows enumeration.",
                                     "Metasploit: auxiliary/gather/ldap_search"))
-        if "DNS Enum" in key and "recursion" in output:
+        if "DNS Enum" in key and ("recursion" in output or "AXFR" in output):
             analysis.append(suggest("dnsenum / dig",
                                     "DNS server misconfigured (zone transfer or recursion).",
                                     "Metasploit: auxiliary/gather/dns_info"))
@@ -91,6 +91,7 @@ def enumerate_host(ip):
     both("NTP Info", f"nmap -sU -p 123 --script ntp-info {evasive}", "ntpq -p")
     both("SMTP Enum", f"nmap -p 25 --script smtp-enum-users {evasive}", "smtp-user-enum -M VRFY -U /usr/share/wordlists/usernames.txt -t")
     both("DNS Enum", f"nmap -p 53 --script dns-recursion,dns-service-discovery,dns-nsid {evasive}", "dnsenum")
+    results["DNS Zone Transfer (dig)"] = run_cmd(f"dig axfr @{ip}")
     both("VoIP (SIP)", f"nmap -sU -p 5060 --script sip-methods {evasive}", "svmap")
     both("IPSec (IKE)", f"nmap -sU -p 500 --script ike-version {evasive}", "ike-scan")
 
