@@ -21,17 +21,19 @@ A powerful dual-toolkit designed for advanced network reconnaissance, domain foo
 
 ### 🧠 2. `full_evasive_enumerator.py` – Network Enumerator
 
-- ✅ Live host discovery with evasion
+- ✅ Live host discovery with firewall evasion
 - ✅ Full protocol enumeration:
   - NetBIOS / SMB Shares & Users
   - SNMP / LDAP / NFS / RPC
-  - DNS / NTP / SMTP / SIP / IPSec
-- ✅ Runs both:
-  - `nmap` with firewall-evasion flags
-  - Specialized Kali tools (`nbtscan`, `ldapsearch`, `showmount`, `rpcinfo`, etc.)
-- ✅ Auto-generated HTML report with collapsible sections
-- ✅ Attack surface analysis with exploit/tool suggestions (e.g., Metasploit modules)
-- 🔐 Report is permanently authored:
+  - DNS / NTP / SMTP
+  - 📞 **VoIP SIP (UDP 5060)**
+  - IPSec/IKE (VPN detection)
+- ✅ Dual-engine scanning:
+  - `nmap` with evasive flags
+  - Specialized Kali tools (`nbtscan`, `ldapsearch`, `showmount`, `rpcinfo`, `svmap`, etc.)
+- ✅ HTML report with collapsible protocol sections
+- ✅ Automated attack surface analysis with exploit/tool suggestions
+- 🔐 Authorship credit hardcoded:
   ```
   Maintained by Arman Kumar | GitHub: armank8000
   ```
@@ -40,13 +42,13 @@ A powerful dual-toolkit designed for advanced network reconnaissance, domain foo
 
 ## 📦 Requirements
 
-Most tools are pre-installed on Kali Linux. To install any missing ones:
+Ensure these packages are installed (most are pre-installed in Kali):
 
 ```bash
 sudo apt update
 sudo apt install nmap nbtscan smbclient enum4linux snmp ldap-utils rpcbind nfs-common \
 net-tools dnsutils dnsenum ike-scan smtp-user-enum theharvester sublist3r \
-dnsrecon traceroute whois curl
+dnsrecon traceroute whois curl svmap
 pip install python-whois
 ```
 
@@ -69,7 +71,7 @@ cd master_footprint
 python3 footprint_advanced.py example.com
 ```
 
-**With Custom Output:**
+**With Custom HTML Output:**
 
 ```bash
 python3 footprint_advanced.py example.com --output /home/kali/reports/example.html
@@ -77,13 +79,13 @@ python3 footprint_advanced.py example.com --output /home/kali/reports/example.ht
 
 ---
 
-### 🧠 Run Full Network Enumerator
+### 🧠 Run Network Enumerator
 
 ```bash
 sudo python3 full_evasive_enumerator.py -i 192.168.1.0/24
 ```
 
-**With HTML Report Output:**
+**With Collapsible HTML Report:**
 
 ```bash
 sudo python3 full_evasive_enumerator.py -i 192.168.1.0/24 -o enum_report.html
@@ -91,15 +93,15 @@ sudo python3 full_evasive_enumerator.py -i 192.168.1.0/24 -o enum_report.html
 
 ---
 
-## 📂 Sample Outputs
+## 📂 Output Overview
 
-- `/home/kali/reports/example.html`  
-  → Clean domain footprint report
-
-- `enum_report.html`  
-  → Interactive collapsible report with:
-    * Nmap & Tool Output (side-by-side)
-    * Auto attack suggestions with tool mappings
+- `/home/kali/reports/example.html` → Domain recon report
+- `enum_report.html` → Collapsible report with:
+  - Nmap results
+  - Tool-based results
+  - Attack surface insights
+  - SIP service detection
+  - Embedded author attribution
 
 ---
 
@@ -115,4 +117,3 @@ Cybersecurity | Offensive Security | OSINT | Python Automation
 ## ⭐️ Show Your Support
 
 If this toolkit helped you, please ⭐️ the repo and share it with your team or community!
-
