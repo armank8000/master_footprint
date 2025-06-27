@@ -2,7 +2,6 @@
 
 import os
 import argparse
-import re
 
 HTML_HEAD = """
 <html><head><title>Full Enumeration Report</title>
@@ -33,41 +32,29 @@ def analyze_results(results):
 
     for key, output in results.items():
         if "SMB Shares" in key and "\"IPC$\"" in output:
-            analysis.append(suggest("smbclient / enum4linux",
-                                    "SMB open shares detected. Potential for null session exploitation.",
-                                    "Metasploit: auxiliary/scanner/smb/smb_enumshares"))
+            analysis.append(suggest("smbclient / enum4linux", "SMB open shares detected. Potential for null session exploitation.", "Metasploit: auxiliary/scanner/smb/smb_enumshares"))
         if "SNMP" in key and "SNMPv2" in output:
-            analysis.append(suggest("snmp-check / snmpwalk",
-                                    "SNMP v2c exposed. Default community strings may be guessable.",
-                                    "Metasploit: auxiliary/scanner/snmp/snmp_enum"))
+            analysis.append(suggest("snmp-check / snmpwalk", "SNMP v2c exposed. Default community strings may be guessable.", "Metasploit: auxiliary/scanner/snmp/snmp_enum"))
         if "NFS Shares" in key and "/" in output:
-            analysis.append(suggest("showmount / mount",
-                                    "Public NFS share exposed.",
-                                    "Manual Exploit: mount NFS share and extract sensitive data"))
+            analysis.append(suggest("showmount / mount", "Public NFS share exposed.", "Manual Exploit: mount NFS share and extract sensitive data"))
         if "VoIP" in key and "SIP" in output:
-            analysis.append(suggest("svmap / svwar",
-                                    "SIP service detected.",
-                                    "Metasploit: auxiliary/scanner/sip/sip_enum"))
+            analysis.append(suggest("svmap / svwar", "SIP service detected.", "Metasploit: auxiliary/scanner/sip/sip_enum"))
         if "IPSec" in key and "IKE Version" in output:
-            analysis.append(suggest("ike-scan",
-                                    "IKE VPN fingerprinting.",
-                                    "Metasploit: auxiliary/scanner/ike/ikeenum"))
+            analysis.append(suggest("ike-scan", "IKE VPN fingerprinting.", "Metasploit: auxiliary/scanner/ike/ikeenum"))
         if "SMTP" in key and "VRFY" in output:
-            analysis.append(suggest("smtp-user-enum",
-                                    "SMTP user enumeration via VRFY/EXPN.",
-                                    "Metasploit: auxiliary/scanner/smtp/smtp_enum"))
+            analysis.append(suggest("smtp-user-enum", "SMTP user enumeration via VRFY/EXPN.", "Metasploit: auxiliary/scanner/smtp/smtp_enum"))
         if "LDAP" in key and "dn:" in output:
-            analysis.append(suggest("ldapsearch",
-                                    "Anonymous LDAP bind allows enumeration.",
-                                    "Metasploit: auxiliary/gather/ldap_search"))
+            analysis.append(suggest("ldapsearch", "Anonymous LDAP bind allows enumeration.", "Metasploit: auxiliary/gather/ldap_search"))
         if "DNS Enum" in key and ("recursion" in output or "AXFR" in output):
-            analysis.append(suggest("dnsenum / dig",
-                                    "DNS server misconfigured (zone transfer or recursion).",
-                                    "Metasploit: auxiliary/gather/dns_info"))
+            analysis.append(suggest("dnsenum / dig", "DNS server misconfigured (zone transfer or recursion).", "Metasploit: auxiliary/gather/dns_info"))
+        if "DNS Cache Snooping (recursive)" in key and "NOERROR" in output:
+            analysis.append(suggest("dig", "Recursive DNS cache snooping detected.", "Manual: dig +recurse target.com @target"))
+        if "DNS Cache Snooping (non-recursive)" in key and "NOERROR" in output:
+            analysis.append(suggest("dig", "Non-recursive DNS cache snooping detected.", "Manual: dig +norecurse target.com @target"))
+        if "DNS Zone Walking" in key and "NSEC" in output:
+            analysis.append(suggest("fierce / ldns-walk", "NSEC records leak subdomains via zone walking.", "Manual: ldns-walk <domain> @nameserver"))
         if "SMB Users" in key and "guest" in output.lower():
-            analysis.append(suggest("enum4linux",
-                                    "SMB guest account present.",
-                                    "Metasploit: auxiliary/scanner/smb/smb_enumusers"))
+            analysis.append(suggest("enum4linux", "SMB guest account present.", "Metasploit: auxiliary/scanner/smb/smb_enumusers"))
     if not analysis:
         analysis.append("No critical enumeration vulnerabilities detected based on available scripts.")
     return "\n".join(analysis)
@@ -82,7 +69,7 @@ def enumerate_host(ip):
 
     results["Nmap Full Scan"] = run_cmd(f"nmap -sS -sV -O -A {evasive} {ip}")
     both("NetBIOS", f"nmap -p 137 --script nbstat {evasive}", "nbtscan")
-    both("SMB Shares", f"nmap -p 445 --script smb-enum-shares {evasive}", "smbclient -L \\{ip} -N")
+    both("SMB Shares", f"nmap -p 445 --script smb-enum-shares {evasive}", "smbclient -L \\\\{ip} -N")
     both("SMB Users", f"nmap -p 445 --script smb-enum-users {evasive}", "enum4linux")
     both("SNMP", f"nmap -sU -p 161 --script snmp-info {evasive}", "snmpwalk -v2c -c public")
     both("LDAP", f"nmap -p 389 --script ldap-search {evasive}", "ldapsearch -x -H ldap://")
@@ -92,17 +79,14 @@ def enumerate_host(ip):
     both("SMTP Enum", f"nmap -p 25 --script smtp-enum-users {evasive}", "smtp-user-enum -M VRFY -U /usr/share/wordlists/usernames.txt -t")
     both("DNS Enum", f"nmap -p 53 --script dns-recursion,dns-service-discovery,dns-nsid {evasive}", "dnsenum")
     results["DNS Zone Transfer (dig)"] = run_cmd(f"dig axfr @{ip}")
+    results["DNS Cache Snooping (recursive)"] = run_cmd(f"dig +recurse facebook.com @{ip}")
+    results["DNS Cache Snooping (non-recursive)"] = run_cmd(f"dig +norecurse facebook.com @{ip}")
+    results["DNS Zone Walking"] = run_cmd(f"ldns-walk example.com @{ip}")
     both("VoIP (SIP)", f"nmap -sU -p 5060 --script sip-methods {evasive}", "svmap")
     both("IPSec (IKE)", f"nmap -sU -p 500 --script ike-version {evasive}", "ike-scan")
 
     results["Attack Surface Analysis"] = analyze_results(results)
     return results
-
-def discover_hosts(subnet):
-    evasive = build_evasion_flags()
-    print(f"[~] Discovering hosts in {subnet}...")
-    out = run_cmd(f"nmap -n -sS {evasive} -oG - {subnet}")
-    return [line.split()[1] for line in out.splitlines() if line.startswith("Host:") and "Ports:" in line]
 
 def save_html(outfile, sections):
     with open(outfile, 'w') as f:
@@ -111,6 +95,12 @@ def save_html(outfile, sections):
             f.write(f"<details><summary>{title}</summary><pre>{data}</pre></details>")
         f.write(HTML_FOOT)
     print(f"[✔] Output saved to {outfile}")
+
+def discover_hosts(subnet):
+    evasive = build_evasion_flags()
+    print(f"[~] Discovering hosts in {subnet}...")
+    out = run_cmd(f"nmap -n -sS {evasive} -oG - {subnet}")
+    return [line.split()[1] for line in out.splitlines() if line.startswith("Host:") and "Ports:" in line]
 
 def main():
     parser = argparse.ArgumentParser(description="🔥 Full Evasive Enumerator")
