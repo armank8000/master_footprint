@@ -1,95 +1,118 @@
-### 📄 `README.md`
+# 🧠 Cyber Recon & Enumeration Toolkit (Kali Linux)
 
-````markdown
-# 🕵️‍♂️ Advanced Domain Footprinting Tool (Kali Linux)
-
-A powerful, all-in-one Python script for domain footprinting and reconnaissance — perfect for cybersecurity researchers, penetration testers, and OSINT analysts.
+A powerful dual-toolkit designed for advanced network reconnaissance, domain footprinting, and firewall-evasive enumeration. Built with Python and Kali-native tools, it's ideal for red teamers, penetration testers, and OSINT analysts.
 
 ---
 
-## 🔧 Features
+## 🔧 Tools Included
+
+### 🔍 1. `footprint_advanced.py` – Domain Footprinting Tool
 
 - ✅ DNS Lookup
-- ✅ WHOIS Lookup (with Python fallback)
-- ✅ Traceroute
-- ✅ Email Enumeration using `theHarvester` (Baidu)
-- ✅ Personal Data & Social Media Scraping
-- ✅ IP Geolocation (via `ipinfo.io`)
-- ✅ DNSRecon Integration
+- ✅ WHOIS Lookup (Python fallback supported)
+- ✅ Traceroute & GeoIP via ipinfo.io
+- ✅ theHarvester (Email enumeration via Baidu)
+- ✅ Social scraping (LinkedIn/Facebook)
 - ✅ Subdomain Enumeration via `Sublist3r`
-- ✅ Output results to a clean, themed **HTML report**
-- ✅ Automatically creates report directory if not existing
+- ✅ `dnsrecon` integration
+- ✅ Auto HTML report with styled layout
 
 ---
 
-## 🖥️ Requirements
+### 🧠 2. `full_evasive_enumerator.py` – Network Enumerator
 
-Make sure the following tools are installed (most come pre-installed in Kali):
+- ✅ Live host discovery with evasion
+- ✅ Full protocol enumeration:
+  - NetBIOS / SMB Shares & Users
+  - SNMP / LDAP / NFS / RPC
+  - DNS / NTP / SMTP / SIP / IPSec
+- ✅ Runs both:
+  - `nmap` with firewall-evasion flags
+  - Specialized Kali tools (`nbtscan`, `ldapsearch`, `showmount`, `rpcinfo`, etc.)
+- ✅ Auto-generated HTML report with collapsible sections
+- ✅ Attack surface analysis with exploit/tool suggestions (e.g., Metasploit modules)
+- 🔐 Report is permanently authored:
+  ```
+  Maintained by Arman Kumar | GitHub: armank8000
+  ```
+
+---
+
+## 📦 Requirements
+
+Most tools are pre-installed on Kali Linux. To install any missing ones:
 
 ```bash
 sudo apt update
-sudo apt install theharvester dnsrecon sublist3r traceroute whois curl
+sudo apt install nmap nbtscan smbclient enum4linux snmp ldap-utils rpcbind nfs-common \
+net-tools dnsutils dnsenum ike-scan smtp-user-enum theharvester sublist3r \
+dnsrecon traceroute whois curl
 pip install python-whois
-````
+```
 
 ---
 
 ## 🚀 Usage
 
-### 1. Clone or Download
+### Clone the Repo
 
 ```bash
-git clone https://github.com/yourusername/footprinting-tool.git
-cd footprinting-tool
-```
-
-### 2. Run the Script
-
-```bash
-python3 footprint_domain.py example.com
-```
-
-### 3. Save Output to Custom HTML File
-
-```bash
-python3 footprint_advanced.py example.com --output /home/kali/reports/example_report.html
+git clone https://github.com/armank8000/master_footprint.git
+cd master_footprint
 ```
 
 ---
 
-## 📂 Output
+### 🔍 Run Domain Footprinting Tool
 
-The tool prints results in the terminal and generates a structured HTML report containing:
-
-* Subdomains
-* Emails
-* DNS records
-* Traceroute hops
-* WHOIS data
-* IP metadata
-* and more...
-
-Example output file:
-
+```bash
+python3 footprint_advanced.py example.com
 ```
-/home/kali/reports/example_report.html
+
+**With Custom Output:**
+
+```bash
+python3 footprint_advanced.py example.com --output /home/kali/reports/example.html
 ```
 
 ---
 
+### 🧠 Run Full Network Enumerator
+
+```bash
+sudo python3 full_evasive_enumerator.py -i 192.168.1.0/24
+```
+
+**With HTML Report Output:**
+
+```bash
+sudo python3 full_evasive_enumerator.py -i 192.168.1.0/24 -o enum_report.html
+```
+
+---
+
+## 📂 Sample Outputs
+
+- `/home/kali/reports/example.html`  
+  → Clean domain footprint report
+
+- `enum_report.html`  
+  → Interactive collapsible report with:
+    * Nmap & Tool Output (side-by-side)
+    * Auto attack suggestions with tool mappings
+
+---
 
 ## 🤖 Author
 
-**Arman Kumar**
-Cybersecurity | OSINT | AI Security Projects
-[GitHub](https://github.com/armank8000) | [LinkedIn](https://linkedin.com/in/arman-kumar8000)
+**Arman Kumar**  
+Cybersecurity | Offensive Security | OSINT | Python Automation  
+🔗 [GitHub](https://github.com/armank8000)  
+🔗 [LinkedIn](https://linkedin.com/in/arman-kumar8000)
 
 ---
 
 ## ⭐️ Show Your Support
 
-If you found this tool useful, please ⭐️ the repo and share it with your team!
-
-```
-
+If this toolkit helped you, please ⭐️ the repo and share it with your team or community!
 
