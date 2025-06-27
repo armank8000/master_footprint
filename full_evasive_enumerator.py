@@ -28,34 +28,46 @@ def build_evasion_flags():
 
 def analyze_results(results):
     analysis = []
-    def suggest(tool, description):
-        return f"\n➡️ {description}\n🔧 Suggested Tool: {tool}\n"
+    def suggest(tool, description, exploit):
+        return f"\n➡️ {description}\n🔧 Suggested Tool: {tool}\n💣 Exploit/Technique: {exploit}\n"
 
     for key, output in results.items():
         if "SMB Shares" in key and "\"IPC$\"" in output:
-            analysis.append(suggest("Metasploit module: auxiliary/scanner/smb/smb_enumshares",
-                                    "SMB open shares detected. Potential for null session exploitation."))
+            analysis.append(suggest("smbclient / enum4linux",
+                                    "SMB open shares detected. Potential for null session exploitation.",
+                                    "Metasploit: auxiliary/scanner/smb/smb_enumshares"))
         if "SNMP" in key and "SNMPv2" in output:
-            analysis.append(suggest("snmp-check / Metasploit: auxiliary/scanner/snmp/snmp_enum",
-                                    "SNMP v2c exposed. Default community strings may be guessable."))
+            analysis.append(suggest("snmp-check / snmpwalk",
+                                    "SNMP v2c exposed. Default community strings may be guessable.",
+                                    "Metasploit: auxiliary/scanner/snmp/snmp_enum"))
         if "NFS Shares" in key and "/" in output:
-            analysis.append(suggest("showmount + mount.nfs",
-                                    "Public NFS share. Possible to mount and exfiltrate files."))
+            analysis.append(suggest("showmount / mount",
+                                    "Public NFS share exposed.",
+                                    "Manual Exploit: mount NFS share and extract sensitive data"))
         if "VoIP" in key and "SIP" in output:
-            analysis.append(suggest("svmap + svwar / Metasploit: auxiliary/scanner/sip/sip_enum",
-                                    "SIP service detected. Enumeration or brute force possible."))
+            analysis.append(suggest("svmap / svwar",
+                                    "SIP service detected.",
+                                    "Metasploit: auxiliary/scanner/sip/sip_enum"))
         if "IPSec" in key and "IKE Version" in output:
-            analysis.append(suggest("ike-scan / Metasploit: auxiliary/scanner/ike/ikeenum",
-                                    "IPSec IKE exposed. Aggressive mode or info disclosure possible."))
+            analysis.append(suggest("ike-scan",
+                                    "IKE VPN fingerprinting.",
+                                    "Metasploit: auxiliary/scanner/ike/ikeenum"))
         if "SMTP" in key and "VRFY" in output:
-            analysis.append(suggest("smtp-user-enum / Metasploit: auxiliary/scanner/smtp/smtp_enum",
-                                    "SMTP user enumeration via VRFY/EXPN is possible."))
+            analysis.append(suggest("smtp-user-enum",
+                                    "SMTP user enumeration via VRFY/EXPN.",
+                                    "Metasploit: auxiliary/scanner/smtp/smtp_enum"))
         if "LDAP" in key and "dn:" in output:
-            analysis.append(suggest("ldapsearch / Metasploit: auxiliary/gather/ldap_search",
-                                    "LDAP access available. May leak user or domain info."))
+            analysis.append(suggest("ldapsearch",
+                                    "Anonymous LDAP bind allows enumeration.",
+                                    "Metasploit: auxiliary/gather/ldap_search"))
         if "DNS Enum" in key and "recursion" in output:
-            analysis.append(suggest("dnsenum / dig / Metasploit: auxiliary/gather/dns_info",
-                                    "DNS recursion or misconfig may allow zone transfer or amplification."))
+            analysis.append(suggest("dnsenum / dig",
+                                    "DNS server misconfigured (zone transfer or recursion).",
+                                    "Metasploit: auxiliary/gather/dns_info"))
+        if "SMB Users" in key and "guest" in output.lower():
+            analysis.append(suggest("enum4linux",
+                                    "SMB guest account present.",
+                                    "Metasploit: auxiliary/scanner/smb/smb_enumusers"))
     if not analysis:
         analysis.append("No critical enumeration vulnerabilities detected based on available scripts.")
     return "\n".join(analysis)
